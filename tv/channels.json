@@ -3,52 +3,88 @@
     {
       "name": "NHK (Japanese)",
       "network": "NHK",
-      "group": "Public",
+      "group": "National",
       "youtubeChannelId": "UCip8ve30-AoX2y2OtAAmqFA",
       "hasLive": false,
       "homepage": "https://www.nhk.or.jp/",
       "note": "Official Japanese-language NHK channel; upload-only on YouTube (main broadcast not live due to rights)"
     },
     {
-      "name": "ANN News (TV Asahi)",
-      "network": "TV Asahi",
-      "group": "News",
-      "youtubeChannelId": "UCGCZAYq5Xxojl_tSXcVJhiQ",
-      "hasLive": true,
-      "homepage": "https://news.tv-asahi.co.jp/",
-      "note": "24/7 live news stream (ANNnewsCH)"
-    },
-    {
-      "name": "TBS NEWS DIG (TBS)",
-      "network": "TBS",
-      "group": "News",
-      "youtubeChannelId": "UC6AG81pAkf6Lbi_1VC5NmPA",
-      "hasLive": true,
-      "homepage": "https://newsdig.tbs.co.jp/",
-      "note": "TBS NEWS DIG Powered by JNN; runs 24/7 live news"
+      "name": "日テレ公式チャンネル",
+      "network": "Nippon TV",
+      "group": "National",
+      "youtubeChannelId": "UCkLqBWFde2ZJZfqojgpDqyA",
+      "hasLive": false,
+      "homepage": "https://www.ntv.co.jp/",
+      "note": "Main official Nippon TV channel; program clips and uploads"
     },
     {
       "name": "日テレNEWS (Nippon TV)",
       "network": "Nippon TV",
-      "group": "News",
+      "group": "National",
       "youtubeChannelId": "UCuTAXTexrhetbOe3zgskJBQ",
       "hasLive": true,
       "homepage": "https://news.ntv.co.jp/",
       "note": "Nippon News Network; runs 24/7 live news"
     },
     {
+      "name": "TBS公式 YouTuboo",
+      "network": "TBS",
+      "group": "National",
+      "youtubeChannelId": "UCxpIo6FFB7gMQz2Fy2X8XdQ",
+      "hasLive": false,
+      "homepage": "https://www.tbs.co.jp/",
+      "note": "Main official TBS channel; drama/variety promos and uploads"
+    },
+    {
+      "name": "TBS NEWS DIG (TBS)",
+      "network": "TBS",
+      "group": "National",
+      "youtubeChannelId": "UC6AG81pAkf6Lbi_1VC5NmPA",
+      "hasLive": true,
+      "homepage": "https://newsdig.tbs.co.jp/",
+      "note": "TBS NEWS DIG Powered by JNN; runs 24/7 live news"
+    },
+    {
+      "name": "フジテレビ公式",
+      "network": "Fuji TV",
+      "group": "National",
+      "youtubeChannelId": "UC7_mFzmj89tqAqgpl5695QQ",
+      "hasLive": false,
+      "homepage": "https://www.fujitv.co.jp/",
+      "note": "Main official Fuji TV channel; program clips and uploads"
+    },
+    {
       "name": "FNNプライムオンライン (Fuji TV)",
       "network": "Fuji TV",
-      "group": "News",
+      "group": "National",
       "youtubeChannelId": "UCoQBJMzcwmXrRSHBFAlTsIw",
       "hasLive": true,
       "homepage": "https://www.fnn.jp/",
       "note": "FNN Prime Online; runs 24/7 live news"
     },
     {
+      "name": "tvasahi (テレビ朝日)",
+      "network": "TV Asahi",
+      "group": "National",
+      "youtubeChannelId": "UCrEU0b3lpZyrFh7VImwWkxA",
+      "hasLive": false,
+      "homepage": "https://www.tv-asahi.co.jp/",
+      "note": "Main official TV Asahi channel; program clips and uploads"
+    },
+    {
+      "name": "ANN News (TV Asahi)",
+      "network": "TV Asahi",
+      "group": "National",
+      "youtubeChannelId": "UCGCZAYq5Xxojl_tSXcVJhiQ",
+      "hasLive": true,
+      "homepage": "https://news.tv-asahi.co.jp/",
+      "note": "24/7 live news stream (ANNnewsCH)"
+    },
+    {
       "name": "テレ東公式 TV TOKYO",
       "network": "TV Tokyo",
-      "group": "Networks",
+      "group": "National",
       "youtubeChannelId": "UCrDj5t8Q9ZFSGft7a3PWl9g",
       "hasLive": false,
       "homepage": "https://www.tv-tokyo.co.jp/",
@@ -57,11 +93,74 @@
     {
       "name": "ウェザーニュース / Weathernews",
       "network": "Weathernews",
-      "group": "News",
+      "group": "National",
       "youtubeChannelId": "UCNsidkYpIAQ4QaufptQBPHQ",
       "hasLive": true,
       "homepage": "https://weathernews.jp/",
       "note": "Weathernews LiVE; 24/7 live weather and news"
+    },
+    {
+      "name": "全国無料テレビ BS11",
+      "network": "BS11",
+      "group": "BS / Satellite",
+      "youtubeChannelId": "UC793WyAnqu2VU5m9mplwfpQ",
+      "hasLive": false,
+      "homepage": "https://www.bs11.jp/",
+      "note": "Official BS11 channel; program clips and uploads"
+    },
+    {
+      "name": "BS-TBS公式チャンネル",
+      "network": "BS-TBS",
+      "group": "BS / Satellite",
+      "youtubeChannelId": "UChoziCRbOWoPlliSL8h6QTA",
+      "hasLive": false,
+      "homepage": "https://www.bs-tbs.co.jp/",
+      "note": "Official BS-TBS channel; program clips and uploads"
+    },
+    {
+      "name": "BS Fuji Official Channel",
+      "network": "BS Fuji",
+      "group": "BS / Satellite",
+      "youtubeChannelId": "UCUpu3NS6cQMSzLlCHcVYynA",
+      "hasLive": false,
+      "homepage": "https://www.bsfuji.tv/",
+      "note": "Official BS Fuji channel; uploads"
+    },
+    {
+      "name": "BSAsahi (BS朝日)",
+      "network": "BS Asahi",
+      "group": "BS / Satellite",
+      "youtubeChannelId": "UCYMua3k4CTKbCJXUNwj89wg",
+      "hasLive": false,
+      "homepage": "https://www.bs-asahi.co.jp/",
+      "note": "Official BS Asahi channel; uploads"
+    },
+    {
+      "name": "BSテレ東",
+      "network": "BS TV Tokyo",
+      "group": "BS / Satellite",
+      "youtubeChannelId": "UCo2_XQe4dd5Hkw2DOt4ABxw",
+      "hasLive": false,
+      "homepage": "https://www.bs-tvtokyo.co.jp/",
+      "note": "Official BS TV Tokyo channel (1.6M subs); uploads"
+    },
+    {
+      "name": "BS日テレ公式チャンネル",
+      "network": "BS Nippon TV",
+      "group": "BS / Satellite",
+      "youtubeChannelId": "UC9wH9xklRekMi6oOS_spMWA",
+      "hasLive": false,
+      "homepage": "https://www.bs4.jp/",
+      "note": "Official BS Nippon TV channel; uploads"
+    },
+    {
+      "name": "WOWOW official",
+      "network": "WOWOW",
+      "group": "BS / Satellite",
+      "youtubeChannelId": "UCZfWmiGEbwWNPMe2nr3WdDg",
+      "hasLive": false,
+      "homepage": "https://www.wowow.co.jp/",
+      "note": "Official WOWOW channel; uploads"
     }
   ]
 }

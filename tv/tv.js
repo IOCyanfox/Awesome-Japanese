@@ -1,4 +1,4 @@
-const GROUP_ORDER = ["Public", "News", "Networks"];
+const GROUP_ORDER = ["National", "BS / Satellite", "Hokkaido", "Tohoku", "Kanto", "Chubu", "Kansai", "Chugoku", "Shikoku", "Kyushu-Okinawa"];
 
 function uploadsUrl(channelId, autoplay) {
   // Channel uploads playlist (UC... -> UU...). A playlist embed auto-advances
@@ -81,7 +81,7 @@ function render(channels) {
   if (valid.length === 0) { showError(); return; }
 
   const groups = {};
-  for (const ch of valid) (groups[ch.group || "Networks"] ||= []).push(ch);
+  for (const ch of valid) (groups[ch.group || "National"] ||= []).push(ch);
   const orderedKeys = [
     ...GROUP_ORDER.filter(g => groups[g]),
     ...Object.keys(groups).filter(g => !GROUP_ORDER.includes(g)),

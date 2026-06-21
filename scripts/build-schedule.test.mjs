@@ -1,22 +1,24 @@
 import { test } from "node:test";
 import assert from "node:assert";
-import { buildSchedule, orientationFromPlayerResponse } from "./build-schedule.mjs";
+import { buildSchedule, keepVideo } from "./build-schedule.mjs";
 
-test("orientation: vertical when height > width (Short)", () => {
-  const pr = { streamingData: { formats: [{ width: 360, height: 640 }] } };
-  assert.strictEqual(orientationFromPlayerResponse(pr), "vertical");
+test("keepVideo: drops zero/negative duration", () => {
+  assert.strictEqual(keepVideo(0, "landscape"), false);
 });
-test("orientation: landscape when width > height", () => {
-  const pr = { streamingData: { formats: [{ width: 640, height: 360 }] } };
-  assert.strictEqual(orientationFromPlayerResponse(pr), "landscape");
+test("keepVideo: keeps long videos regardless of orientation", () => {
+  assert.strictEqual(keepVideo(600, undefined), true);
+  assert.strictEqual(keepVideo(600, "vertical"), true); // >180 can't be a Short
 });
-test("orientation: reads adaptiveFormats when formats empty", () => {
-  const pr = { streamingData: { adaptiveFormats: [{ mimeType: "audio" }, { width: 1920, height: 1080 }] } };
-  assert.strictEqual(orientationFromPlayerResponse(pr), "landscape");
+test("keepVideo: drops confirmed vertical Shorts", () => {
+  assert.strictEqual(keepVideo(100, "vertical"), false);
+  assert.strictEqual(keepVideo(30, "vertical"), false);
 });
-test("orientation: null when no sized format", () => {
-  assert.strictEqual(orientationFromPlayerResponse({ streamingData: {} }), null);
-  assert.strictEqual(orientationFromPlayerResponse({}), null);
+test("keepVideo: keeps confirmed landscape clips even if short", () => {
+  assert.strictEqual(keepVideo(38, "landscape"), true);
+});
+test("keepVideo: unknown orientation -> duration floor (drop <=60s)", () => {
+  assert.strictEqual(keepVideo(30, undefined), false); // likely a Short
+  assert.strictEqual(keepVideo(90, undefined), true);  // probably a real clip
 });
 
 const channelsData = [

@@ -1,4 +1,5 @@
 import { parseDuration } from "./duration.mjs";
+import { spawn } from "node:child_process";
 
 // Pure: fetched per-channel data -> schedule.json object.
 export function buildSchedule(channelsData, epoch, generatedAt) {
@@ -69,45 +70,48 @@ async function videoDetails(ids, key) {
   return out;
 }
 
-const UA = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0 Safari/537.36";
+const SHORTS_FALLBACK_MAX = 60; // when orientation is unknown, treat <= this as a Short
 
-// Pure: given a parsed ytInitialPlayerResponse, classify the video's true frame
-// orientation from the first sized media format. "vertical" => a Short.
-export function orientationFromPlayerResponse(pr) {
-  const sd = (pr && pr.streamingData) || {};
-  const fmts = (sd.formats || []).concat(sd.adaptiveFormats || []);
-  const f = fmts.find((x) => x.width && x.height);
-  if (!f) return null;
-  return f.height > f.width ? "vertical" : "landscape";
+// Pure: should a video be kept (not a Short)? orientation is "vertical" |
+// "landscape" | undefined (yt-dlp couldn't classify it).
+//   - duration <= 0           -> drop (unusable: live/upcoming)
+//   - duration > SHORTS_MAX   -> keep (too long to be a Short)
+//   - vertical                -> drop (confirmed Short)
+//   - landscape               -> keep (confirmed normal video)
+//   - unknown                 -> duration floor: drop only the very short ones
+export function keepVideo(durationSeconds, orientation) {
+  if (durationSeconds <= 0) return false;
+  if (durationSeconds > SHORTS_DURATION_MAX) return true;
+  if (orientation === "vertical") return false;
+  if (orientation === "landscape") return true;
+  return durationSeconds > SHORTS_FALLBACK_MAX;
 }
 
-// Fetch the watch page and read the real orientation. null if undeterminable.
-async function videoOrientation(videoId) {
-  try {
-    const r = await fetch(`https://www.youtube.com/watch?v=${videoId}`, {
-      headers: { "User-Agent": UA, "Cookie": "CONSENT=YES+1" },
-      signal: AbortSignal.timeout(15000),
+// Classify video orientation with yt-dlp (works from datacenter/CI IPs where
+// scraping is bot-blocked). Returns { id: "vertical"|"landscape" }; ids yt-dlp
+// can't extract are simply absent (callers treat absent as "unknown").
+function ytDlpOrientations(videoIds) {
+  return new Promise((resolve) => {
+    if (!videoIds.length) return resolve({});
+    const args = ["--skip-download", "--no-warnings", "--ignore-errors",
+      "--print", "%(id)s %(width)s %(height)s", "--", ...videoIds];
+    let p;
+    try { p = spawn("yt-dlp", args); }
+    catch (e) { return resolve({}); } // yt-dlp missing -> all unknown
+    let out = "";
+    p.stdout.on("data", (d) => (out += d));
+    p.on("error", () => resolve({}));
+    p.on("close", () => {
+      const map = {};
+      for (const line of out.split("\n")) {
+        const [id, w, h] = line.trim().split(/\s+/);
+        if (id && /^\d+$/.test(w) && /^\d+$/.test(h)) {
+          map[id] = Number(h) > Number(w) ? "vertical" : "landscape";
+        }
+      }
+      resolve(map);
     });
-    if (!r.ok) return null;
-    const html = await r.text();
-    const m = html.match(/ytInitialPlayerResponse\s*=\s*(\{.*?\});/s);
-    if (!m) return null;
-    let pr;
-    try { pr = JSON.parse(m[1]); } catch (e) { return null; }
-    return orientationFromPlayerResponse(pr);
-  } catch (e) { return null; }
-}
-
-// Keep landscape videos; drop vertical Shorts. Only short-enough videos are
-// checked (longer ones can't be Shorts); undetectable ones are kept (fail-open).
-async function withoutShorts(videos) {
-  const out = [];
-  for (const v of videos) {
-    const secs = parseDuration(v.isoDuration);
-    if (secs > 0 && secs <= SHORTS_DURATION_MAX && (await videoOrientation(v.videoId)) === "vertical") continue;
-    out.push(v);
-  }
-  return out;
+  });
 }
 
 async function main() {
@@ -116,15 +120,32 @@ async function main() {
   const outArg = process.argv.indexOf("--out");
   const outPath = outArg > -1 ? process.argv[outArg + 1] : "tv/schedule.json";
 
-  const channelsData = [];
+  // 1) Fetch each channel's recent uploads + details.
+  const raw = [];
   for (const ch of CHANNELS) {
     const ids = (await uploadIds(ch.channelId, key)).reverse(); // oldest -> newest
     const details = await videoDetails(ids, key);
     // If an id was deleted/privated between the two calls, details[id] is
     // undefined → the spread is a no-op → no isoDuration → dropped by .filter. OK.
     const videos = ids.map((id) => ({ videoId: id, ...details[id] })).filter((v) => v.isoDuration);
-    channelsData.push({ channelId: ch.channelId, name: ch.name, videos: await withoutShorts(videos) });
+    raw.push({ channelId: ch.channelId, name: ch.name, videos });
   }
+
+  // 2) Classify orientation for all short-enough candidates in one yt-dlp pass.
+  const candidates = raw.flatMap((ch) => ch.videos)
+    .filter((v) => { const s = parseDuration(v.isoDuration); return s > 0 && s <= SHORTS_DURATION_MAX; })
+    .map((v) => v.videoId);
+  const orient = await ytDlpOrientations([...new Set(candidates)]);
+  const verticalCount = Object.values(orient).filter((o) => o === "vertical").length;
+  console.log(`Orientation: ${Object.keys(orient).length}/${candidates.length} classified, ${verticalCount} vertical`);
+
+  // 3) Drop Shorts, keep the rest.
+  const channelsData = raw.map((ch) => ({
+    channelId: ch.channelId,
+    name: ch.name,
+    videos: ch.videos.filter((v) => keepVideo(parseDuration(v.isoDuration), orient[v.videoId])),
+  }));
+
   const schedule = buildSchedule(channelsData, EPOCH, Math.floor(Date.now() / 1000));
   const { writeFileSync } = await import("node:fs");
   writeFileSync(outPath, JSON.stringify(schedule));

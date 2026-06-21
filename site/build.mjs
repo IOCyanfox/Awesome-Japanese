@@ -71,6 +71,7 @@ const page = template.replace("{{TOC}}", tocHtml).replace("{{CONTENT}}", html);
 
 await mkdir(join(ROOT, "assets"), { recursive: true });
 await copyFile(join(__dirname, "home.css"), join(ROOT, "assets", "home.css"));
+await copyFile(join(ROOT, "tv", "share.js"), join(ROOT, "assets", "share.js")); // shared with /tv/
 await writeFile(join(ROOT, "index.html"), page);
 await writeFile(join(ROOT, "sitemap.xml"), sitemap());
 

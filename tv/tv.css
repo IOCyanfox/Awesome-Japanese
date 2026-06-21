@@ -32,7 +32,18 @@ body {
 .player-frame iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
 
 .info { background: var(--panel); padding: 18px 20px; overflow: auto; border-left: 1px solid var(--line);
-  display: flex; flex-direction: column; }
+  display: flex; flex-direction: column; position: relative; }
+.share-wrap { position: absolute; top: 14px; right: 16px; z-index: 6; }
+.share-btn { background: var(--accent); color: var(--accent-ink); border: 0; border-radius: 999px;
+  padding: 6px 14px; font-size: .8rem; font-weight: 700; cursor: pointer; }
+.share-btn:hover { filter: brightness(1.08); }
+.share-menu { position: absolute; right: 0; top: 116%; min-width: 160px; background: var(--panel);
+  border: 1px solid var(--line); border-radius: 10px; padding: 6px; box-shadow: 0 14px 34px rgba(0,0,0,.4);
+  display: flex; flex-direction: column; gap: 2px; }
+.share-menu[hidden] { display: none; }
+.share-menu a, .share-menu button { display: block; text-align: left; background: transparent; border: 0;
+  color: var(--text); padding: 8px 10px; border-radius: 7px; font-size: .86rem; cursor: pointer; text-decoration: none; font-family: inherit; }
+.share-menu a:hover, .share-menu button:hover { background: var(--panel-2); }
 .info-learn { margin-top: auto; padding-top: 14px; border-top: 1px solid var(--line); }
 .info-learn-h { color: var(--muted); font-size: .72rem; letter-spacing: .03em; margin: 6px 0 5px; }
 .info-learn a { color: var(--accent); font-weight: 700; text-decoration: none; font-size: .9rem; }

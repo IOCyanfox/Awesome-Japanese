@@ -291,3 +291,17 @@ a { color: var(--ai); text-decoration: none; }
 @media (max-width: 400px) {
   .hero-kana { font-size: 44vw; right: -6vw; }
 }
+
+/* Share button (hero) — native share sheet on phones, link menu on desktop */
+.hero-share { position: relative; display: inline-block; margin-top: 16px; }
+.share-btn { background: var(--shu); color: var(--washi); border: 0; border-radius: 999px;
+  padding: 9px 18px; font-weight: 700; cursor: pointer; font-size: .95rem; font-family: inherit; }
+.share-btn:hover { background: var(--shu-deep); }
+.share-menu { position: absolute; left: 0; top: 118%; min-width: 184px; background: var(--card);
+  border: 1px solid var(--line); border-radius: 12px; padding: 6px; box-shadow: 0 16px 40px rgba(28,26,22,.22);
+  display: flex; flex-direction: column; gap: 2px; z-index: 20; }
+.share-menu[hidden] { display: none; }
+.share-menu a, .share-menu button { display: block; text-align: left; background: transparent; border: 0;
+  color: var(--sumi); padding: 9px 12px; border-radius: 8px; font-size: .92rem; cursor: pointer;
+  text-decoration: none; font-family: inherit; }
+.share-menu a:hover, .share-menu button:hover { background: var(--washi-2); }

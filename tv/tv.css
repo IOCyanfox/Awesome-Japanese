@@ -83,12 +83,13 @@ body {
 .epg-times { position: relative; border-right: 1px solid var(--line); }
 .epg-time { position: absolute; right: 4px; font-size: 10px; color: var(--muted); transform: translateY(-50%); white-space: nowrap; }
 .epg-region-sep { flex: none; position: sticky; top: 0; z-index: 3; width: 20px; writing-mode: vertical-rl;
-  background: var(--panel-2); color: var(--muted); font-size: 9px; padding: 56px 3px 0;
+  background: var(--panel-2); color: var(--muted); font-size: 9px; padding: 76px 3px 0;
   border-right: 1px solid var(--line); white-space: nowrap; }
 .epg-col { flex: none; border-right: 1px solid var(--line); }
 .epg-col.on .epg-colhead { box-shadow: inset 0 -3px 0 var(--ring); }
 .epg-col.region-off, .epg-col.search-off { display: none; }
-.epg-colhead { position: sticky; top: 0; z-index: 3; display: flex; flex-direction: column;
+.epg-colhead { position: sticky; top: 0; z-index: 3; height: 72px; /* must match HEAD_H in epg.js */
+  display: flex; flex-direction: column;
   align-items: center; justify-content: center; gap: 1px; padding: 2px; text-align: center;
   background: var(--panel); border-bottom: 1px solid var(--line); cursor: pointer; }
 .epg-colhead:hover { background: var(--panel-2); }

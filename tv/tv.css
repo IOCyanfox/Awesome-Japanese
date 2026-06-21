@@ -23,6 +23,8 @@ body {
 /* ---- App shell (full viewport) ---- */
 .app { height: 100vh; display: grid; grid-template-rows: 1fr auto minmax(0, 42vh) auto; }
 .app.guide-hidden { grid-template-rows: 1fr auto 0 auto; }
+.app.guide-hidden .top { grid-template-columns: 1fr; }  /* video goes full width */
+.app.guide-hidden .info { display: none; }
 
 .top { display: grid; grid-template-columns: 1.9fr 1fr; min-height: 0; }
 .video { background: #000; display: flex; align-items: center; justify-content: center; overflow: hidden; }

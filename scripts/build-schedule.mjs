@@ -35,6 +35,7 @@ const CHANNELS = [
   { channelId: "UCrDj5t8Q9ZFSGft7a3PWl9g", name: "テレ東公式 TV TOKYO" },
 ];
 const API = "https://www.googleapis.com/youtube/v3";
+const SHORTS_DURATION_MAX = 180; // only videos this short can be Shorts; skip the check for longer ones
 
 async function getJson(url) {
   const r = await fetch(url);
@@ -68,6 +69,47 @@ async function videoDetails(ids, key) {
   return out;
 }
 
+const UA = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0 Safari/537.36";
+
+// Pure: given a parsed ytInitialPlayerResponse, classify the video's true frame
+// orientation from the first sized media format. "vertical" => a Short.
+export function orientationFromPlayerResponse(pr) {
+  const sd = (pr && pr.streamingData) || {};
+  const fmts = (sd.formats || []).concat(sd.adaptiveFormats || []);
+  const f = fmts.find((x) => x.width && x.height);
+  if (!f) return null;
+  return f.height > f.width ? "vertical" : "landscape";
+}
+
+// Fetch the watch page and read the real orientation. null if undeterminable.
+async function videoOrientation(videoId) {
+  try {
+    const r = await fetch(`https://www.youtube.com/watch?v=${videoId}`, {
+      headers: { "User-Agent": UA, "Cookie": "CONSENT=YES+1" },
+      signal: AbortSignal.timeout(15000),
+    });
+    if (!r.ok) return null;
+    const html = await r.text();
+    const m = html.match(/ytInitialPlayerResponse\s*=\s*(\{.*?\});/s);
+    if (!m) return null;
+    let pr;
+    try { pr = JSON.parse(m[1]); } catch (e) { return null; }
+    return orientationFromPlayerResponse(pr);
+  } catch (e) { return null; }
+}
+
+// Keep landscape videos; drop vertical Shorts. Only short-enough videos are
+// checked (longer ones can't be Shorts); undetectable ones are kept (fail-open).
+async function withoutShorts(videos) {
+  const out = [];
+  for (const v of videos) {
+    const secs = parseDuration(v.isoDuration);
+    if (secs > 0 && secs <= SHORTS_DURATION_MAX && (await videoOrientation(v.videoId)) === "vertical") continue;
+    out.push(v);
+  }
+  return out;
+}
+
 async function main() {
   const key = process.env.YOUTUBE_API_KEY;
   if (!key) throw new Error("YOUTUBE_API_KEY not set");
@@ -81,7 +123,7 @@ async function main() {
     // If an id was deleted/privated between the two calls, details[id] is
     // undefined → the spread is a no-op → no isoDuration → dropped by .filter. OK.
     const videos = ids.map((id) => ({ videoId: id, ...details[id] })).filter((v) => v.isoDuration);
-    channelsData.push({ channelId: ch.channelId, name: ch.name, videos });
+    channelsData.push({ channelId: ch.channelId, name: ch.name, videos: await withoutShorts(videos) });
   }
   const schedule = buildSchedule(channelsData, EPOCH, Math.floor(Date.now() / 1000));
   const { writeFileSync } = await import("node:fs");

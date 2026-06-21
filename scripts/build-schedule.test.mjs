@@ -1,6 +1,23 @@
 import { test } from "node:test";
 import assert from "node:assert";
-import { buildSchedule } from "./build-schedule.mjs";
+import { buildSchedule, orientationFromPlayerResponse } from "./build-schedule.mjs";
+
+test("orientation: vertical when height > width (Short)", () => {
+  const pr = { streamingData: { formats: [{ width: 360, height: 640 }] } };
+  assert.strictEqual(orientationFromPlayerResponse(pr), "vertical");
+});
+test("orientation: landscape when width > height", () => {
+  const pr = { streamingData: { formats: [{ width: 640, height: 360 }] } };
+  assert.strictEqual(orientationFromPlayerResponse(pr), "landscape");
+});
+test("orientation: reads adaptiveFormats when formats empty", () => {
+  const pr = { streamingData: { adaptiveFormats: [{ mimeType: "audio" }, { width: 1920, height: 1080 }] } };
+  assert.strictEqual(orientationFromPlayerResponse(pr), "landscape");
+});
+test("orientation: null when no sized format", () => {
+  assert.strictEqual(orientationFromPlayerResponse({ streamingData: {} }), null);
+  assert.strictEqual(orientationFromPlayerResponse({}), null);
+});
 
 const channelsData = [
   { channelId: "UCaaa", name: "Chan A", videos: [

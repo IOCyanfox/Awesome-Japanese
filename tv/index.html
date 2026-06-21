@@ -62,10 +62,11 @@
     <p>No tracking, no client-side API keys — just public YouTube embeds. Each channel plays a live, scheduled loop of its latest uploads — like a TV channel. Switch away and back and you'll rejoin where the broadcast is now.</p>
   </footer>
 
-  <!-- schedule.js + region.js (first-party) load before tv.js (they set
-       globalThis.ScheduleLib / window.Region). No SRI on iframe_api: it is a
-       versioned loader Google updates without a published hash, so pinning one
-       would break playback on rotation. -->
+  <!-- icons.js + schedule.js + region.js (first-party) load before tv.js (they
+       set globalThis.IconLib / globalThis.ScheduleLib / window.Region). No SRI
+       on iframe_api: it is a versioned loader Google updates without a published
+       hash, so pinning one would break playback on rotation. -->
+  <script src="icons.js"></script>
   <script src="schedule.js"></script>
   <script src="region.js"></script>
   <script src="https://www.youtube.com/iframe_api"></script>

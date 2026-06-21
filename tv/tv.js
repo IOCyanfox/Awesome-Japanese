@@ -6,10 +6,13 @@ let apiReady = false;
 let ytPlayer = null;
 let schedule = null;          // parsed schedule.json
 let activeChannelId = null;
-let selectedChip = null;
 let pendingTune = null;       // channelId picked before the API was ready
 let currentIndex = -1;        // index of the item the player is on (for error skipping)
 let errorStreak = 0;          // consecutive load errors, to avoid infinite skip loops
+
+const GROUP_ORDER = ["National", "BS / Satellite", "Hokkaido", "Tohoku", "Kanto", "Chubu", "Kansai", "Chugoku", "Shikoku", "Kyushu-Okinawa"];
+let activeIconEl = null;      // the currently-selected icon element
+let activeName = "";          // active channel name (restored after hover)
 
 const npName = document.getElementById("np-name");
 const npMode = document.getElementById("np-mode");
@@ -65,43 +68,67 @@ function tune(channelId, autoplay) {
   if (autoplay) ytPlayer.loadVideoById(opts); else ytPlayer.cueVideoById(opts);
 }
 
-function selectChip(channelId, chipEl) {
-  if (selectedChip) selectedChip.classList.remove("selected");
-  if (chipEl) { chipEl.classList.add("selected"); selectedChip = chipEl; }
+function selectIcon(channelId, el) {
+  if (activeIconEl) activeIconEl.classList.remove("on");
+  if (el) { el.classList.add("on"); activeIconEl = el; }
+  activeName = (schedule.channels[channelId] || {}).name || "";
 }
 
-function makeChip(channelId, ch) {
-  const chip = document.createElement("div");
-  chip.className = "chip";
-  const name = document.createElement("div");
-  name.className = "name";
-  name.textContent = ch.name;
+function applyInitials(btn, name) {
+  const lib = globalThis.IconLib;
+  btn.classList.add("initials");
+  btn.style.setProperty("--hue", lib.hueFromString(name));
+  btn.textContent = lib.initials(name);
+}
+
+function iconEl(channelId, ch) {
   const btn = document.createElement("button");
-  btn.className = "latest";
-  btn.textContent = "● Tune in";
+  btn.className = "sicon";
+  btn.type = "button";
+  btn.title = ch.name;
   btn.setAttribute("aria-label", "Tune in to " + ch.name);
-  btn.addEventListener("click", () => { selectChip(channelId, chip); tune(channelId, true); });
-  chip.append(name, btn);
-  return chip;
+  if (ch.icon) {
+    const img = document.createElement("img");
+    img.src = ch.icon; img.alt = ""; img.loading = "lazy";
+    img.addEventListener("error", () => { img.remove(); applyInitials(btn, ch.name); });
+    btn.appendChild(img);
+  } else {
+    applyInitials(btn, ch.name);
+  }
+  btn.addEventListener("click", () => { selectIcon(channelId, btn); tune(channelId, true); });
+  btn.addEventListener("mouseenter", () => { npName.textContent = ch.name; });
+  btn.addEventListener("mouseleave", () => { npName.textContent = activeName; });
+  btn.addEventListener("focus", () => { npName.textContent = ch.name; });
+  btn.addEventListener("blur", () => { npName.textContent = activeName; });
+  return btn;
 }
 
 function render() {
   const ids = Object.keys(schedule.channels);
   if (!ids.length) { showError(); return; }
-  const section = document.createElement("div");
-  section.className = "rail-group";
-  const h = document.createElement("h2"); h.textContent = "Live Channels";
-  const chips = document.createElement("div"); chips.className = "chips";
-  let firstId = null, firstChip = null;
+  const groups = {};
   for (const id of ids) {
-    const chip = makeChip(id, schedule.channels[id]);
-    if (!firstId) { firstId = id; firstChip = chip; }
-    chips.appendChild(chip);
+    const g = schedule.channels[id].group;
+    const key = GROUP_ORDER.includes(g) ? g : "Other";
+    (groups[key] ||= []).push(id);
   }
-  section.append(h, chips);
-  rail.appendChild(section);
+  const order = [...GROUP_ORDER.filter((g) => groups[g]), ...(groups["Other"] ? ["Other"] : [])];
+  let firstId = null, firstEl = null;
+  for (const key of order) {
+    const section = document.createElement("div");
+    section.className = "rail-group";
+    const h = document.createElement("h2"); h.textContent = key;
+    const grid = document.createElement("div"); grid.className = "icon-grid";
+    for (const id of groups[key]) {
+      const el = iconEl(id, schedule.channels[id]);
+      if (!firstId) { firstId = id; firstEl = el; }
+      grid.appendChild(el);
+    }
+    section.append(h, grid);
+    rail.appendChild(section);
+  }
   // Auto-tune the first channel, cued (no autoplay until a click).
-  selectChip(firstId, firstChip);
+  selectIcon(firstId, firstEl);
   tune(firstId, false);
 }
 

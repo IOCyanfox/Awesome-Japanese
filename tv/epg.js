@@ -1,10 +1,10 @@
 // tv/epg.js — TV-guide (番組表) grid: vertical time, channel columns, region-grouped.
 (function () {
   "use strict";
-  const PPM = 3;                 // pixels per minute
-  const WINDOW_SEC = 3 * 3600;   // 3-hour window (header height = 56px, in CSS)
-  const COL_W = 96;              // channel column width
-  const MIN_BLOCK = 14;          // min program-block height
+  const PPM = 10;                // pixels per minute (roomy — most clips are short)
+  const WINDOW_SEC = 2 * 3600;   // 2-hour window (header height = 56px, in CSS)
+  const COL_W = 130;             // channel column width
+  const MIN_BLOCK = 16;          // min program-block height
 
   const px = (sec) => (sec / 60) * PPM;
   function el(cls) { const d = document.createElement("div"); d.className = cls; return d; }
@@ -32,6 +32,7 @@
     const now = Math.floor(Date.now() / 1000);
     const board = px(WINDOW_SEC);
     container.replaceChildren();
+    container.style.setProperty("--half", px(1800) + "px"); // 30-min gridline spacing
     const inner = el("epg-inner");
 
     // time gutter (sticky left)
@@ -59,8 +60,10 @@
         for (const p of progs) {
           const b = document.createElement("button");
           b.className = "epg-block" + (p.live ? " live" : ""); b.type = "button"; b.title = p.title;
-          b.style.top = Math.max(0, px(p.start - now)) + "px";
-          b.style.height = Math.max(MIN_BLOCK, px(p.end - now) - px(p.start - now)) + "px";
+          const top = Math.max(0, px(p.start - now));
+          const bottom = Math.min(board, px(p.end - now)); // clip at the 2h edge
+          b.style.top = top + "px";
+          b.style.height = Math.max(MIN_BLOCK, bottom - top) + "px";
           const tt = el("epg-title"); tt.textContent = p.title; b.appendChild(tt);
           b.addEventListener("click", () => app.tune(id));
           track.appendChild(b);

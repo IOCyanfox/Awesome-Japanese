@@ -1,4 +1,5 @@
 import { parseDuration } from "./duration.mjs";
+import { readFileSync, writeFileSync } from "node:fs";
 
 // Pure: fetched per-channel data -> schedule.json object.
 export function buildSchedule(channelsData, epoch, generatedAt) {
@@ -27,17 +28,13 @@ export function buildSchedule(channelsData, epoch, generatedAt) {
 
 const EPOCH = 1700000000; // FIXED — never change; keeps the shared clock continuous.
 const MAX_ITEMS = 40;     // recent uploads per channel (window)
-// Embeddable news channels. The "main" broadcaster channels (NHK, 日テレ公式,
-// TBS公式, フジ, テレ東) DISABLE embedded playback (YouTube error 150), so they
-// can't be used here; these news channels allow embedding. status.embeddable is
-// still checked per video below as a safety net.
-const CHANNELS = [
-  { channelId: "UCGCZAYq5Xxojl_tSXcVJhiQ", name: "ANN News (TV Asahi)" },
-  { channelId: "UC6AG81pAkf6Lbi_1VC5NmPA", name: "TBS NEWS DIG" },
-  { channelId: "UCuTAXTexrhetbOe3zgskJBQ", name: "日テレNEWS" },
-  { channelId: "UCoQBJMzcwmXrRSHBFAlTsIw", name: "FNNプライムオンライン" },
-  { channelId: "UCNsidkYpIAQ4QaufptQBPHQ", name: "ウェザーニュース" },
-];
+// All channels come from the directory (tv/channels.json). Embeddability is
+// per-video (even "main" broadcasters mix embeddable + error-150 uploads), so
+// it's filtered per video via status.embeddable below — not per channel.
+// Channels that yield fewer than MIN_ITEMS playable items are dropped.
+const MIN_ITEMS = 4;
+const CHANNELS = JSON.parse(readFileSync(new URL("../tv/channels.json", import.meta.url), "utf8"))
+  .channels.map((c) => ({ channelId: c.youtubeChannelId, name: c.name }));
 const API = "https://www.googleapis.com/youtube/v3";
 const SHORTS_DURATION_MAX = 180; // only videos this short can be Shorts; skip the check for longer ones
 
@@ -104,29 +101,43 @@ async function main() {
   const outArg = process.argv.indexOf("--out");
   const outPath = outArg > -1 ? process.argv[outArg + 1] : "tv/schedule.json";
 
-  // 1) Fetch each channel's recent uploads + details.
+  // 1) Fetch each channel's recent uploads + details (limited concurrency).
+  async function fetchChannel(ch) {
+    try {
+      const ids = (await uploadIds(ch.channelId, key)).reverse(); // oldest -> newest
+      const details = await videoDetails(ids, key);
+      // Deleted/privated between calls → details[id] undefined → no isoDuration → dropped.
+      const videos = ids.map((id) => ({ videoId: id, ...details[id] })).filter((v) => v.isoDuration);
+      return { channelId: ch.channelId, name: ch.name, videos };
+    } catch (e) {
+      console.warn(`fetch failed: ${ch.name}: ${e.message}`);
+      return { channelId: ch.channelId, name: ch.name, videos: [] };
+    }
+  }
   const raw = [];
-  for (const ch of CHANNELS) {
-    const ids = (await uploadIds(ch.channelId, key)).reverse(); // oldest -> newest
-    const details = await videoDetails(ids, key);
-    // If an id was deleted/privated between the two calls, details[id] is
-    // undefined → the spread is a no-op → no isoDuration → dropped by .filter. OK.
-    const videos = ids.map((id) => ({ videoId: id, ...details[id] })).filter((v) => v.isoDuration);
-    raw.push({ channelId: ch.channelId, name: ch.name, videos });
+  const CONC = 6;
+  for (let i = 0; i < CHANNELS.length; i += CONC) {
+    raw.push(...(await Promise.all(CHANNELS.slice(i, i + CONC).map(fetchChannel))));
   }
 
-  // 2) Drop Shorts. Orientation is unavailable in CI (see note above), so
-  // keepVideo() applies its duration-floor fallback.
+  // 2) Drop Shorts (duration floor; orientation unavailable in CI, see note).
   const channelsData = raw.map((ch) => ({
     channelId: ch.channelId,
     name: ch.name,
     videos: ch.videos.filter((v) => keepVideo(parseDuration(v.isoDuration), undefined)),
   }));
 
-  const schedule = buildSchedule(channelsData, EPOCH, Math.floor(Date.now() / 1000));
-  const { writeFileSync } = await import("node:fs");
+  // 3) Build, log every channel's playable count, drop those below MIN_ITEMS.
+  const full = buildSchedule(channelsData, EPOCH, Math.floor(Date.now() / 1000));
+  const rows = CHANNELS.map((c) => [c.name, full.channels[c.channelId]?.items.length || 0]).sort((a, b) => a[1] - b[1]);
+  console.log("Per-channel playable items (after embeddable + Shorts filter):");
+  for (const [n, k] of rows) console.log(`  ${k < MIN_ITEMS ? "DROP" : "keep"} ${String(k).padStart(3)}  ${n}`);
+  const kept = {};
+  for (const [id, c] of Object.entries(full.channels)) if (c.items.length >= MIN_ITEMS) kept[id] = c;
+  const schedule = { ...full, channels: kept };
+
   writeFileSync(outPath, JSON.stringify(schedule));
-  console.log(`Wrote ${outPath}: ${Object.keys(schedule.channels).length} channels`);
+  console.log(`Wrote ${outPath}: ${Object.keys(kept).length}/${CHANNELS.length} channels kept (>=${MIN_ITEMS} items)`);
 }
 
 // Run main() only when invoked directly (not when imported by tests).

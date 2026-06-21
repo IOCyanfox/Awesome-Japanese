@@ -87,6 +87,24 @@ body {
   box-shadow: var(--now-glow); z-index: 2; pointer-events: none; }
 .no-match { color: var(--muted); padding: 16px; font-size: 13px; }
 
+/* ---- Settings modal ---- */
+.modal { position: fixed; inset: 0; display: flex; align-items: flex-start; justify-content: center;
+  background: rgba(0, 0, 0, .55); z-index: 50; }
+.modal[hidden] { display: none; }
+.modal-card { margin-top: 6vh; width: 380px; max-width: 92vw; background: var(--panel);
+  border: 1px solid var(--line); border-radius: 14px; color: var(--text); box-shadow: 0 20px 50px rgba(0, 0, 0, .5); }
+.modal-head { display: flex; justify-content: space-between; align-items: center; padding: 14px 18px; border-bottom: 1px solid var(--line); }
+.modal-body { padding: 14px 18px 18px; }
+.set-label { color: var(--muted); font-size: 10px; letter-spacing: .08em; margin: 16px 0 8px; }
+.set-label:first-child { margin-top: 0; }
+.set-row { font-size: 13px; margin-bottom: 6px; }
+.seg { display: flex; gap: 8px; }
+.seg-btn { flex: 1; padding: 8px; border-radius: 8px; border: 1px solid var(--line); background: var(--bg); color: var(--text); cursor: pointer; font-size: 12px; }
+.seg-btn.on { border-color: var(--accent); background: var(--live-bg); }
+.set-note { color: var(--muted); font-size: 10px; margin: 6px 0 4px; }
+.set-check { display: flex; align-items: center; gap: 10px; font-size: 13px; margin: 10px 0; cursor: pointer; }
+.set-check input { width: 16px; height: 16px; accent-color: var(--accent); }
+
 .error { margin: 16px; padding: 14px 16px; border: 1px solid #5a2b2b;
   background: #2a1414; border-radius: 10px; color: #ffb4b4; }
 .error a { color: #ffd; }

@@ -47,6 +47,19 @@ function createPlayer() {
   });
 }
 
+// Rebuild the player (controls is fixed at creation). Re-seek to the live offset
+// via the existing pendingTune/onReady path.
+function rebuildPlayer() {
+  apiReady = false;
+  pendingTune = activeChannelId;
+  try { if (ytPlayer) ytPlayer.destroy(); } catch (e) {}
+  ytPlayer = null;
+  const frame = document.querySelector(".player-frame");
+  frame.replaceChildren();
+  const div = document.createElement("div"); div.id = "player"; frame.appendChild(div);
+  createPlayer();
+}
+
 function onStateChange(e) {
   if (e.data === YT.PlayerState.PLAYING) errorStreak = 0;
   if (e.data === YT.PlayerState.ENDED && activeChannelId) tune(activeChannelId, true);
@@ -186,10 +199,19 @@ function showError() {
   errorBox.innerHTML = 'Could not load the schedule. See the <a href="../tv.md">Markdown TV guide</a> instead.';
 }
 
+// Apply a setting change to the running app (called after Settings persists it).
+function onSettingChange(key, value) {
+  if (key === "theme") window.Theme.apply(value);
+  else if (key === "controls") rebuildPlayer();
+  else if (key === "hideRegion") window.EPG.refilter();
+  // guideHidden affects the next load only (per spec); already persisted.
+}
+
 // ---- Boot ----
 window.Theme.apply(window.Settings.store.read().theme);
 if (window.Region) window.Region.detectCountry().then((cc) => {
   window.__viewerCountry = cc;
+  window.Settings.setRegionNote(cc);
   if (window.EPG && window.EPG.refilter) window.EPG.refilter();
 });
 
@@ -203,6 +225,7 @@ fetch("schedule.json")
     const first = order[0];
     updateInfo(first);
     tune(first, false);
-    if (typeof wireControls === "function") wireControls();
+    wireControls();
+    window.Settings.initUI({ onChange: onSettingChange });
   })
   .catch(showError);

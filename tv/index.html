@@ -65,6 +65,30 @@
     </div>
   </div>
 
+  <div id="settings-modal" class="modal" hidden>
+    <div class="modal-card" role="dialog" aria-modal="true" aria-label="Settings 設定">
+      <div class="modal-head"><b>SETTINGS&nbsp; 設定</b><button id="set-close" class="sb-btn" type="button">CLOSE 閉じる</button></div>
+      <div class="modal-body">
+        <div class="set-label">APPEARANCE&nbsp; 表示</div>
+        <div class="set-row">Theme テーマ</div>
+        <div class="seg" id="set-theme">
+          <button type="button" data-theme-pref="auto" class="seg-btn">Auto 自動</button>
+          <button type="button" data-theme-pref="light" class="seg-btn">Light</button>
+          <button type="button" data-theme-pref="dark" class="seg-btn">Dark</button>
+        </div>
+        <div class="set-note">Auto follows your system (light → Light, dark → Dark).</div>
+
+        <div class="set-label">PLAYBACK&nbsp; 再生</div>
+        <label class="set-check"><input type="checkbox" id="set-controls"> Show video controls 再生コントロールを表示</label>
+        <label class="set-check"><input type="checkbox" id="set-guide-hidden"> Start with guide hidden 番組表をたたむ</label>
+
+        <div class="set-label">REGION&nbsp; 地域</div>
+        <label class="set-check"><input type="checkbox" id="set-hide-region"> Hide region-locked channels 地域制限を隠す</label>
+        <div class="set-note" id="set-region-note">Detecting…</div>
+      </div>
+    </div>
+  </div>
+
   <div id="error" class="error" hidden></div>
 
   <!-- icons.js / schedule.js / region.js / theme.js / settings.js (first-party)

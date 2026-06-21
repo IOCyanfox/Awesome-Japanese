@@ -5,6 +5,12 @@ import { buildSchedule, keepVideo } from "./build-schedule.mjs";
 test("keepVideo: drops zero/negative duration", () => {
   assert.strictEqual(keepVideo(0, "landscape"), false);
 });
+test("buildSchedule carries group through", () => {
+  const out = buildSchedule([{ channelId: "UCg", name: "G", group: "Kanto", videos: [
+    { videoId: "v", title: "t", isoDuration: "PT2M", embeddable: true },
+  ]}], 1700000000, 1);
+  assert.strictEqual(out.channels["UCg"].group, "Kanto");
+});
 test("keepVideo: keeps long videos regardless of orientation", () => {
   assert.strictEqual(keepVideo(600, undefined), true);
   assert.strictEqual(keepVideo(600, "vertical"), true); // >180 can't be a Short

@@ -21,7 +21,7 @@ export function buildSchedule(channelsData, epoch, generatedAt) {
     }
     if (!items.length) continue;
     const total = items.reduce((s, it) => s + it.duration, 0);
-    channels[ch.channelId] = { name: ch.name, total, items };
+    channels[ch.channelId] = { name: ch.name, group: ch.group || "", total, items };
   }
   return { epoch, generatedAt, channels };
 }
@@ -34,7 +34,7 @@ const MAX_ITEMS = 40;     // recent uploads per channel (window)
 // Channels that yield fewer than MIN_ITEMS playable items are dropped.
 const MIN_ITEMS = 4;
 const CHANNELS = JSON.parse(readFileSync(new URL("../tv/channels.json", import.meta.url), "utf8"))
-  .channels.map((c) => ({ channelId: c.youtubeChannelId, name: c.name }));
+  .channels.map((c) => ({ channelId: c.youtubeChannelId, name: c.name, group: c.group }));
 const API = "https://www.googleapis.com/youtube/v3";
 const SHORTS_DURATION_MAX = 180; // only videos this short can be Shorts; skip the check for longer ones
 
@@ -66,6 +66,20 @@ async function videoDetails(ids, key) {
         regionRestriction: v.contentDetails?.regionRestriction,
         embeddable: v.status?.embeddable,
       };
+    }
+  }
+  return out;
+}
+
+// Channel avatar URLs, mapped by channel id (≤50/call).
+async function channelIcons(ids, key) {
+  const out = {};
+  for (let i = 0; i < ids.length; i += 50) {
+    const batch = ids.slice(i, i + 50).join(",");
+    const d = await getJson(`${API}/channels?part=snippet&id=${batch}&key=${key}`);
+    for (const c of d.items || []) {
+      const t = c.snippet?.thumbnails || {};
+      out[c.id] = (t.medium || t.default || {}).url || "";
     }
   }
   return out;
@@ -108,10 +122,10 @@ async function main() {
       const details = await videoDetails(ids, key);
       // Deleted/privated between calls → details[id] undefined → no isoDuration → dropped.
       const videos = ids.map((id) => ({ videoId: id, ...details[id] })).filter((v) => v.isoDuration);
-      return { channelId: ch.channelId, name: ch.name, videos };
+      return { channelId: ch.channelId, name: ch.name, group: ch.group, videos };
     } catch (e) {
       console.warn(`fetch failed: ${ch.name}: ${e.message}`);
-      return { channelId: ch.channelId, name: ch.name, videos: [] };
+      return { channelId: ch.channelId, name: ch.name, group: ch.group, videos: [] };
     }
   }
   const raw = [];
@@ -124,6 +138,7 @@ async function main() {
   const channelsData = raw.map((ch) => ({
     channelId: ch.channelId,
     name: ch.name,
+    group: ch.group,
     videos: ch.videos.filter((v) => keepVideo(parseDuration(v.isoDuration), undefined)),
   }));
 
@@ -134,6 +149,11 @@ async function main() {
   for (const [n, k] of rows) console.log(`  ${k < MIN_ITEMS ? "DROP" : "keep"} ${String(k).padStart(3)}  ${n}`);
   const kept = {};
   for (const [id, c] of Object.entries(full.channels)) if (c.items.length >= MIN_ITEMS) kept[id] = c;
+
+  // Attach each kept channel's avatar (mapped by id; omitted -> "").
+  const icons = await channelIcons(Object.keys(kept), key);
+  for (const id of Object.keys(kept)) kept[id].icon = icons[id] || "";
+
   const schedule = { ...full, channels: kept };
 
   writeFileSync(outPath, JSON.stringify(schedule));

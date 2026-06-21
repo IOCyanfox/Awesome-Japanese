@@ -54,7 +54,13 @@
       </div>
     </section>
 
+    <div class="view-toggle" role="tablist">
+      <button id="view-channels" class="vt on" type="button">Channels</button>
+      <button id="view-guide" class="vt" type="button">Guide 番組表</button>
+    </div>
+
     <section id="rail" class="rail" aria-label="Channels"></section>
+    <div id="epg" class="epg" hidden></div>
     <div id="error" class="error" hidden></div>
   </main>
 
@@ -71,5 +77,6 @@
   <script src="region.js"></script>
   <script src="https://www.youtube.com/iframe_api"></script>
   <script src="tv.js"></script>
+  <script src="epg.js"></script>
 </body>
 </html>

@@ -39,6 +39,36 @@ main { max-width: 1000px; margin: 0 auto; padding: 16px; }
 .sicon:focus-visible { box-shadow: 0 0 0 2px #0d0f13, 0 0 0 4px #fff; }
 .sicon.on { filter: none; opacity: 1; box-shadow: 0 0 0 2px #0d0f13, 0 0 0 4px #e7c84b; }
 
+/* Channels / Guide toggle */
+.view-toggle { display: flex; gap: 8px; margin: 14px 2px 4px; }
+.vt { cursor: pointer; border: 1px solid var(--line); background: var(--panel); color: var(--muted);
+  border-radius: 999px; padding: 5px 12px; font-size: .82rem; }
+.vt.on { color: var(--text); border-color: #e7c84b; }
+
+/* EPG / 番組表 grid */
+.epg { overflow: auto; max-height: 72vh; border: 1px solid var(--line); border-radius: 10px;
+  background: var(--bg); position: relative; }
+.epg-inner { display: flex; align-items: flex-start; width: max-content; }
+.epg-gutter { position: sticky; left: 0; z-index: 3; flex: none; width: 46px; background: var(--bg); }
+.epg-corner { position: sticky; top: 0; height: 56px; display: flex; align-items: center; justify-content: center;
+  font-size: .62rem; color: var(--muted); background: var(--panel-2); border-bottom: 1px solid var(--line); }
+.epg-times { position: relative; }
+.epg-time { position: absolute; right: 4px; font-size: .62rem; color: var(--muted); transform: translateY(-50%); }
+.epg-region-sep { position: sticky; top: 0; z-index: 2; flex: none; width: 22px; writing-mode: vertical-rl;
+  background: var(--panel); color: var(--muted); font-size: .6rem; padding: 60px 3px 0; border-left: 1px solid var(--line); white-space: nowrap; }
+.epg-col { flex: none; border-left: 1px solid var(--line); }
+.epg-col-head { position: sticky; top: 0; z-index: 2; height: 56px; display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 2px; background: var(--panel); border-bottom: 1px solid var(--line); }
+.epg-col-head img { width: 26px; height: 26px; border-radius: 50%; object-fit: cover; }
+.epg-col-name { font-size: .56rem; color: var(--muted); max-width: 90px; text-align: center; line-height: 1.1;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.epg-track { position: relative; background: repeating-linear-gradient(to bottom, transparent 0, transparent 89px, var(--line) 89px, var(--line) 90px); }
+.epg-block { position: absolute; left: 2px; right: 2px; overflow: hidden; cursor: pointer; text-align: left;
+  border: 0; border-radius: 4px; padding: 2px 4px; background: var(--panel-2); color: var(--text); }
+.epg-block.live { background: #3a3320; box-shadow: inset 0 0 0 1px #e7c84b; }
+.epg-block:hover { background: #2c3142; }
+.epg-title { font-size: .58rem; line-height: 1.15; overflow: hidden; }
+
 .error { margin-top: 16px; padding: 14px 16px; border: 1px solid #5a2b2b;
   background: #2a1414; border-radius: 10px; color: #ffb4b4; }
 .error a { color: #ffd; }

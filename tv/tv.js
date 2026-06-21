@@ -18,6 +18,8 @@ const GROUP_LABELS_JA = {
 };
 let activeIconEl = null;      // the currently-selected icon element
 let activeName = "";          // active channel name (restored after hover)
+let epgTimer = null;          // re-render timer while the Guide view is open
+let viewsWired = false;
 
 const npName = document.getElementById("np-name");
 const npMode = document.getElementById("np-mode");
@@ -137,6 +139,32 @@ function render() {
   // Auto-tune the first channel, cued (no autoplay until a click).
   selectIcon(firstId, firstEl);
   tune(firstId, false);
+  wireViews();
+}
+
+// Shared API for epg.js (tune the player, read the schedule, region metadata).
+function getSchedule() { return schedule; }
+window.TVApp = { tune, getSchedule, GROUP_ORDER, GROUP_LABELS_JA };
+
+// Channels / Guide(番組表) toggle: swaps the area below the player; the player
+// iframe is never touched. The Guide re-renders every 60s while visible.
+function wireViews() {
+  if (viewsWired) return; viewsWired = true;
+  const railBtn = document.getElementById("view-channels");
+  const guideBtn = document.getElementById("view-guide");
+  const epgBox = document.getElementById("epg");
+  if (!railBtn || !guideBtn || !epgBox) return;
+  function show(guide) {
+    rail.hidden = guide; epgBox.hidden = !guide;
+    railBtn.classList.toggle("on", !guide); guideBtn.classList.toggle("on", guide);
+    if (epgTimer) { clearInterval(epgTimer); epgTimer = null; }
+    if (guide && window.EPG) {
+      window.EPG.render(epgBox);
+      epgTimer = setInterval(() => { if (!epgBox.hidden && window.EPG) window.EPG.render(epgBox); }, 60000);
+    }
+  }
+  railBtn.addEventListener("click", () => show(false));
+  guideBtn.addEventListener("click", () => show(true));
 }
 
 function showError() {

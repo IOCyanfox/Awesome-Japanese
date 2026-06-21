@@ -107,7 +107,8 @@ function updateInfo(channelId) {
   const progs = globalThis.ScheduleLib.programsInWindow(ch, schedule.epoch, now, INFO_WINDOW);
   const cur = progs[0], next = progs[1];
 
-  infoEl.replaceChildren();
+  const box = document.getElementById("info-now") || infoEl;
+  box.replaceChildren();
   const head = el("info-head");
   if (ch.icon) {
     const img = document.createElement("img"); img.className = "info-avatar"; img.src = ch.icon; img.alt = "";
@@ -121,8 +122,8 @@ function updateInfo(channelId) {
   const meta = el("info-meta");
   const range = cur ? hhmm(cur.start) + " – " + hhmm(cur.end) : "";
   meta.textContent = range + "　・　Ch " + (chNo[channelId] || "?") + "　・　" + (ch.group || "");
-  infoEl.append(head, name, title, meta);
-  if (next) { const n = el("info-next"); n.textContent = "NEXT 次 →　" + next.title; infoEl.appendChild(n); }
+  box.append(head, name, title, meta);
+  if (next) { const n = el("info-next"); n.textContent = "NEXT 次 →　" + next.title; box.appendChild(n); }
 }
 
 // Build channel display order (region groups) and assign stable 1-based numbers.

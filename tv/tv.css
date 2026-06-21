@@ -40,8 +40,18 @@ main { max-width: 1000px; margin: 0 auto; padding: 16px; }
 .sicon:focus-visible { box-shadow: 0 0 0 2px #0d0f13, 0 0 0 4px #fff; }
 .sicon.on { filter: none; opacity: 1; box-shadow: 0 0 0 2px #0d0f13, 0 0 0 4px #e7c84b; }
 
+/* Controls row: toggle + search on one line */
+.tv-controls { display: flex; align-items: center; gap: 10px; margin: 14px 2px 4px; flex-wrap: wrap; }
+.tv-search { flex: 1 1 180px; min-width: 0; max-width: 340px; padding: 7px 14px;
+  border: 1px solid var(--line); background: var(--panel); color: var(--text); border-radius: 999px; font-size: .85rem; }
+.tv-search::placeholder { color: var(--muted); }
+.sicon[hidden] { display: none; }                 /* [hidden] must beat display:flex */
+.no-match { color: var(--muted); padding: 16px 4px; font-size: .9rem; }
+.epg-block.match { background: #21304f; box-shadow: inset 0 0 0 1px #4f7cff; }
+.epg-block.live.match { box-shadow: inset 0 0 0 1px #e7c84b, inset 0 0 0 2px #4f7cff; }
+
 /* Channels / Guide toggle */
-.view-toggle { display: flex; gap: 8px; margin: 14px 2px 4px; }
+.view-toggle { display: flex; gap: 8px; flex: none; }
 .vt { cursor: pointer; border: 1px solid var(--line); background: var(--panel); color: var(--muted);
   border-radius: 999px; padding: 5px 12px; font-size: .82rem; }
 .vt.on { color: var(--text); border-color: #e7c84b; }

@@ -54,12 +54,17 @@
       </div>
     </section>
 
-    <div class="view-toggle" role="tablist">
-      <button id="view-channels" class="vt on" type="button">Channels</button>
-      <button id="view-guide" class="vt" type="button">Guide 番組表</button>
+    <div class="tv-controls">
+      <div class="view-toggle" role="tablist">
+        <button id="view-channels" class="vt on" type="button">Channels</button>
+        <button id="view-guide" class="vt" type="button">Guide 番組表</button>
+      </div>
+      <input id="tv-search" class="tv-search" type="search" placeholder="Search channels…"
+             aria-label="Search channels and programs" autocomplete="off">
     </div>
 
     <section id="rail" class="rail" aria-label="Channels"></section>
+    <div id="tv-empty" class="no-match" hidden>No matches.</div>
     <div id="epg" class="epg" hidden></div>
     <div id="error" class="error" hidden></div>
   </main>

@@ -20,6 +20,7 @@ let activeIconEl = null;      // the currently-selected icon element
 let activeName = "";          // active channel name (restored after hover)
 let epgTimer = null;          // re-render timer while the Guide view is open
 let viewsWired = false;
+let query = "";               // current search query (lowercased)
 
 const npName = document.getElementById("np-name");
 const npMode = document.getElementById("np-mode");
@@ -94,6 +95,7 @@ function iconEl(channelId, ch) {
   btn.type = "button";
   btn.title = ch.name;
   btn.setAttribute("aria-label", "Tune in to " + ch.name);
+  btn.dataset.name = (ch.name || "").toLowerCase();
   if (ch.icon) {
     const img = document.createElement("img");
     img.src = ch.icon; img.alt = ""; img.loading = "lazy";
@@ -148,23 +150,51 @@ window.TVApp = { tune, getSchedule, GROUP_ORDER, GROUP_LABELS_JA };
 
 // Channels / Guide(番組表) toggle: swaps the area below the player; the player
 // iframe is never touched. The Guide re-renders every 60s while visible.
+// Filter/render whichever view is currently active for the live query.
+function applyFilter() {
+  const epgBox = document.getElementById("epg");
+  if (epgBox && !epgBox.hidden) { if (window.EPG) window.EPG.render(epgBox, query); }
+  else filterChannels(query);
+}
+
+// Channels view: toggle .sicon visibility by channel name (no re-render, so the
+// player/selection are untouched); hide empty region groups; show #tv-empty.
+function filterChannels(q) {
+  const lib = globalThis.IconLib;
+  let anyVisible = false;
+  rail.querySelectorAll(".rail-group").forEach((sec) => {
+    let visible = 0;
+    sec.querySelectorAll(".sicon").forEach((b) => {
+      const show = lib.matches(q, b.dataset.name);
+      b.hidden = !show;
+      if (show) visible++;
+    });
+    sec.hidden = visible === 0;
+    if (visible) anyVisible = true;
+  });
+  const empty = document.getElementById("tv-empty");
+  if (empty) empty.hidden = !(q && !anyVisible);
+}
+
 function wireViews() {
   if (viewsWired) return; viewsWired = true;
   const railBtn = document.getElementById("view-channels");
   const guideBtn = document.getElementById("view-guide");
   const epgBox = document.getElementById("epg");
+  const search = document.getElementById("tv-search");
   if (!railBtn || !guideBtn || !epgBox) return;
   function show(guide) {
     rail.hidden = guide; epgBox.hidden = !guide;
     railBtn.classList.toggle("on", !guide); guideBtn.classList.toggle("on", guide);
+    const empty = document.getElementById("tv-empty");
+    if (empty && guide) empty.hidden = true; // Channels-only note
     if (epgTimer) { clearInterval(epgTimer); epgTimer = null; }
-    if (guide && window.EPG) {
-      window.EPG.render(epgBox);
-      epgTimer = setInterval(() => { if (!epgBox.hidden && window.EPG) window.EPG.render(epgBox); }, 60000);
-    }
+    applyFilter();                            // render/filter the now-active view
+    if (guide) epgTimer = setInterval(() => { if (!epgBox.hidden) applyFilter(); }, 60000);
   }
   railBtn.addEventListener("click", () => show(false));
   guideBtn.addEventListener("click", () => show(true));
+  if (search) search.addEventListener("input", () => { query = search.value.trim().toLowerCase(); applyFilter(); });
 }
 
 function showError() {

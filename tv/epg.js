@@ -25,13 +25,31 @@
     return keys.map((k) => [k + (ja[k] ? " " + ja[k] : ""), groups[k]]);
   }
 
-  function render(container) {
+  function render(container, query) {
     const app = window.TVApp;
     const sched = app && app.getSchedule();
     if (!sched || !sched.channels) return;
+    const lib = globalThis.IconLib;
+    const q = (query || "").trim().toLowerCase();
     const now = Math.floor(Date.now() / 1000);
     const board = px(WINDOW_SEC);
+
+    // Build the filtered structure first (compute programs once per channel).
+    const sections = [];
+    for (const [label, ids] of grouped(sched, app.GROUP_ORDER, app.GROUP_LABELS_JA)) {
+      const cols = [];
+      for (const id of ids) {
+        const ch = sched.channels[id];
+        const progs = globalThis.ScheduleLib.programsInWindow(ch, sched.epoch, now, WINDOW_SEC);
+        const titleHit = q ? progs.some((p) => lib.matches(q, p.title)) : false;
+        if (q && !lib.matches(q, ch.name) && !titleHit) continue;
+        cols.push({ id, ch, progs });
+      }
+      if (cols.length) sections.push([label, cols]);
+    }
+
     container.replaceChildren();
+    if (q && !sections.length) { const n = el("no-match"); n.textContent = "No matches."; container.appendChild(n); return; }
     container.style.setProperty("--half", px(1800) + "px"); // 30-min gridline spacing
     const inner = el("epg-inner");
 
@@ -45,21 +63,20 @@
     }
     gutter.append(corner, times); inner.appendChild(gutter);
 
-    // region-grouped channel columns
-    for (const [label, ids] of grouped(sched, app.GROUP_ORDER, app.GROUP_LABELS_JA)) {
+    for (const [label, cols] of sections) {
       const sep = el("epg-region-sep"); const s = document.createElement("span"); s.textContent = label; sep.appendChild(s);
       inner.appendChild(sep);
-      for (const id of ids) {
-        const ch = sched.channels[id];
+      for (const { id, ch, progs } of cols) {
         const col = el("epg-col"); col.style.width = COL_W + "px";
         const head = el("epg-col-head");
         if (ch.icon) { const im = document.createElement("img"); im.src = ch.icon; im.alt = ""; im.loading = "lazy"; head.appendChild(im); }
         const nm = el("epg-col-name"); nm.textContent = ch.name; head.appendChild(nm);
         const track = el("epg-track"); track.style.height = board + "px";
-        const progs = globalThis.ScheduleLib.programsInWindow(ch, sched.epoch, now, WINDOW_SEC);
         for (const p of progs) {
           const b = document.createElement("button");
-          b.className = "epg-block" + (p.live ? " live" : ""); b.type = "button"; b.title = p.title;
+          const hit = q && lib.matches(q, p.title);
+          b.className = "epg-block" + (p.live ? " live" : "") + (hit ? " match" : "");
+          b.type = "button"; b.title = p.title;
           const top = Math.max(0, px(p.start - now));
           const bottom = Math.min(board, px(p.end - now)); // clip at the 2h edge
           b.style.top = top + "px";

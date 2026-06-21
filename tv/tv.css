@@ -56,35 +56,38 @@ body {
   background: var(--bg); color: var(--text); border-radius: 999px; font-size: 12px; }
 .tv-search::placeholder { color: var(--muted); }
 
-/* ---- EPG (channel rows × horizontal time) ---- */
-.epg-inner { position: relative; width: max-content; }
-.epg-head { display: flex; position: sticky; top: 0; z-index: 4; background: var(--panel);
-  border-bottom: 1px solid var(--line); }
-.epg-head-spacer { flex: none; position: sticky; left: 0; z-index: 5; background: var(--panel);
-  border-right: 1px solid var(--line); }
-.epg-times { position: relative; height: 24px; }
-.epg-time { position: absolute; top: 4px; font-size: 10px; color: var(--muted);
-  transform: translateX(-50%); white-space: nowrap; }
-.epg-row { display: flex; border-bottom: 1px solid var(--line); }
-.epg-row.on .epg-chcell { box-shadow: inset 3px 0 0 var(--ring); }
-.epg-row.region-off, .epg-row.search-off { display: none; }
-.epg-chcell { flex: none; position: sticky; left: 0; z-index: 3; background: var(--panel);
-  border-right: 1px solid var(--line); display: flex; align-items: center; gap: 8px; padding: 4px 8px; }
-.epg-chno { font-weight: 700; font-size: 12px; min-width: 22px; text-align: right; }
-.epg-chicon { width: 24px; height: 24px; border-radius: 50%; object-fit: cover; background: var(--panel-2); flex: none; }
-.epg-chicon.initials { display: flex; align-items: center; justify-content: center; color: #fff; font-size: 9px; font-weight: 700; background: hsl(var(--hue, 210), 45%, 40%); }
-.epg-chmeta { min-width: 0; }
-.epg-chname { font-size: 11px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.epg-chgenre { font-size: 9px; color: var(--muted); }
-.epg-track { position: relative; flex: none; }
-.epg-prog { position: absolute; top: 3px; bottom: 3px; overflow: hidden; cursor: pointer;
-  text-align: left; border: 0; border-radius: 5px; padding: 4px 7px; margin: 0;
+/* ---- EPG / 番組表 (vertical time, channels as columns) ---- */
+.epg-inner { display: flex; align-items: flex-start; width: max-content; position: relative; }
+.epg-gutter { flex: none; position: sticky; left: 0; z-index: 4; background: var(--bg); }
+.epg-corner { position: sticky; top: 0; z-index: 5; display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 1px; font-size: 8px; color: var(--now);
+  background: var(--panel); border-bottom: 1px solid var(--line); border-right: 1px solid var(--line); }
+.epg-times { position: relative; border-right: 1px solid var(--line); }
+.epg-time { position: absolute; right: 4px; font-size: 10px; color: var(--muted); transform: translateY(-50%); white-space: nowrap; }
+.epg-region-sep { flex: none; position: sticky; top: 0; z-index: 3; width: 20px; writing-mode: vertical-rl;
+  background: var(--panel-2); color: var(--muted); font-size: 9px; padding: 56px 3px 0;
+  border-right: 1px solid var(--line); white-space: nowrap; }
+.epg-col { flex: none; border-right: 1px solid var(--line); }
+.epg-col.on .epg-colhead { box-shadow: inset 0 -3px 0 var(--ring); }
+.epg-col.region-off, .epg-col.search-off { display: none; }
+.epg-colhead { position: sticky; top: 0; z-index: 3; display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 1px; padding: 2px; text-align: center;
+  background: var(--panel); border-bottom: 1px solid var(--line); }
+.epg-chno { font-weight: 700; font-size: 11px; }
+.epg-chicon { width: 22px; height: 22px; border-radius: 50%; object-fit: cover; background: var(--panel-2); flex: none; }
+.epg-chicon.initials { display: flex; align-items: center; justify-content: center; color: #fff; font-size: 8px; font-weight: 700; background: hsl(var(--hue, 210), 45%, 40%); }
+.epg-colname { font-size: 10px; max-width: 130px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.epg-colgenre { font-size: 8px; color: var(--muted); }
+.epg-track { position: relative; background: repeating-linear-gradient(to bottom,
+  transparent 0, transparent calc(var(--half, 300px) - 1px), var(--line) calc(var(--half, 300px) - 1px), var(--line) var(--half, 300px)); }
+.epg-prog { position: absolute; left: 2px; right: 2px; overflow: hidden; cursor: pointer;
+  text-align: left; border: 0; border-radius: 5px; padding: 3px 6px; margin: 0;
   background: var(--panel-2); color: var(--text); font-size: 11px; line-height: 1.2; }
 .epg-prog:hover { outline: 1px solid var(--accent); }
 .epg-prog.live { background: var(--live-bg); box-shadow: inset 0 0 0 1px var(--accent); }
 .epg-prog.match { box-shadow: inset 0 0 0 2px #4f7cff; }
-.epg-now { position: absolute; top: 0; bottom: 0; width: 2px; background: var(--now);
-  box-shadow: var(--now-glow); z-index: 2; pointer-events: none; }
+.epg-progtitle { overflow: hidden; }
+.epg-now { position: absolute; height: 2px; background: var(--now); box-shadow: var(--now-glow); z-index: 2; pointer-events: none; }
 .no-match { color: var(--muted); padding: 16px; font-size: 13px; }
 
 /* ---- Settings modal ---- */

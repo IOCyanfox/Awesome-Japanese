@@ -142,11 +142,7 @@ function buildOrder() {
 }
 
 function highlightActiveRow(channelId) {
-  const epg = document.getElementById("epg");
-  if (!epg) return;
-  epg.querySelectorAll(".epg-row.on").forEach((r) => r.classList.remove("on"));
-  const row = epg.querySelector('.epg-row[data-id="' + channelId + '"]');
-  if (row) row.classList.add("on");
+  if (window.EPG && window.EPG.markActive) window.EPG.markActive(channelId);
 }
 
 // Shared API for epg.js.

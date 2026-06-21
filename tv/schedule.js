@@ -41,6 +41,14 @@
     return out;
   }
 
-  const api = { currentProgram, programsInWindow };
+  // Is this item playable in country cc? Empty/unknown cc fails open (true).
+  function viewableInCountry(item, cc) {
+    const allowed = (item && item.allowed) || [];
+    const blocked = (item && item.blocked) || [];
+    if (!cc) return true;
+    return (!allowed.length || allowed.includes(cc)) && !blocked.includes(cc);
+  }
+
+  const api = { currentProgram, programsInWindow, viewableInCountry };
   if (typeof globalThis !== "undefined") globalThis.ScheduleLib = api;
 })();

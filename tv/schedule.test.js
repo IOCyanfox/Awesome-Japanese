@@ -60,3 +60,21 @@ test("programsInWindow: loops a single-item schedule to fill the window", () => 
 test("programsInWindow: empty schedule -> []", () => {
   assert.deepStrictEqual(programsInWindow({ total: 0, items: [] }, 0, 0, 300), []);
 });
+
+const { viewableInCountry } = globalThis.ScheduleLib;
+test("viewableInCountry: no restriction -> true anywhere", () => {
+  assert.strictEqual(viewableInCountry({ allowed: [], blocked: [] }, "US"), true);
+});
+test("viewableInCountry: allowed-list gates", () => {
+  assert.strictEqual(viewableInCountry({ allowed: ["JP"], blocked: [] }, "JP"), true);
+  assert.strictEqual(viewableInCountry({ allowed: ["JP"], blocked: [] }, "US"), false);
+});
+test("viewableInCountry: blocked-list excludes", () => {
+  assert.strictEqual(viewableInCountry({ allowed: [], blocked: ["US"] }, "US"), false);
+});
+test("viewableInCountry: missing arrays tolerated", () => {
+  assert.strictEqual(viewableInCountry({}, "JP"), true);
+});
+test("viewableInCountry: unknown country -> true (fail-open)", () => {
+  assert.strictEqual(viewableInCountry({ allowed: ["JP"], blocked: [] }, ""), true);
+});

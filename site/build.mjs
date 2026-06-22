@@ -44,9 +44,6 @@ function buildContent(md) {
     return `<h${level} id="${id}">${inner}</h${level}>`;
   });
 
-  // Point markdown links that target the local tv.md file at the live /tv/ page.
-  html = html.replace(/href="(?:\.\/)?tv\.md"/g, 'href="tv/"');
-
   const tocHtml =
     "<ul>" + toc.map((t) => `<li><a href="#${t.id}">${t.text}</a></li>`).join("") + "</ul>";
 
@@ -54,7 +51,7 @@ function buildContent(md) {
 }
 
 function sitemap() {
-  const urls = [SITE_URL, SITE_URL + "tv/"];
+  const urls = [SITE_URL];
   return (
     '<?xml version="1.0" encoding="UTF-8"?>\n' +
     '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' +
@@ -71,7 +68,7 @@ const page = template.replace("{{TOC}}", tocHtml).replace("{{CONTENT}}", html);
 
 await mkdir(join(ROOT, "assets"), { recursive: true });
 await copyFile(join(__dirname, "home.css"), join(ROOT, "assets", "home.css"));
-await copyFile(join(ROOT, "tv", "share.js"), join(ROOT, "assets", "share.js")); // shared with /tv/
+await copyFile(join(__dirname, "share.js"), join(ROOT, "assets", "share.js"));
 await writeFile(join(ROOT, "index.html"), page);
 await writeFile(join(ROOT, "sitemap.xml"), sitemap());
 

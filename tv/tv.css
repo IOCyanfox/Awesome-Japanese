@@ -87,6 +87,7 @@ body {
   border-right: 1px solid var(--line); white-space: nowrap; }
 .epg-col { flex: none; border-right: 1px solid var(--line); }
 .epg-col.on .epg-colhead { box-shadow: inset 0 -3px 0 var(--ring); }
+.epg-col.on .epg-chicon { box-shadow: 0 0 0 2px var(--panel), 0 0 0 4px var(--ring); }
 .epg-col.region-off, .epg-col.search-off { display: none; }
 .epg-colhead { position: sticky; top: 0; z-index: 3; height: 72px; /* must match HEAD_H in epg.js */
   display: flex; flex-direction: column;

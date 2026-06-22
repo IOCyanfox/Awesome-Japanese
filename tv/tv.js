@@ -10,11 +10,11 @@ let pendingTune = null;       // channelId picked before the API was ready
 let currentIndex = -1;        // index of the item the player is on (error skipping)
 let errorStreak = 0;          // consecutive load errors, to bound the skip loop
 
-const GROUP_ORDER = ["National", "BS / Satellite", "Hokkaido", "Tohoku", "Kanto", "Chubu", "Kansai", "Chugoku", "Shikoku", "Kyushu-Okinawa"];
+const GROUP_ORDER = ["National", "BS / Satellite", "Hokkaido", "Tohoku", "Kanto", "Chubu", "Kansai", "Chugoku", "Shikoku", "Kyushu-Okinawa", "Sports"];
 const GROUP_LABELS_JA = {
   "National": "全国", "BS / Satellite": "BS・衛星", "Hokkaido": "北海道",
   "Tohoku": "東北", "Kanto": "関東", "Kansai": "関西", "Chubu": "中部",
-  "Chugoku": "中国", "Shikoku": "四国", "Kyushu-Okinawa": "九州・沖縄", "Other": "その他",
+  "Chugoku": "中国", "Shikoku": "四国", "Kyushu-Okinawa": "九州・沖縄", "Sports": "スポーツ", "Other": "その他",
 };
 const INFO_WINDOW = 3 * 3600;
 

@@ -27,6 +27,7 @@
       prefectures: [["kagawa", "香川"], ["ehime", "愛媛"], ["tokushima", "徳島"], ["kochi", "高知"]] },
     "Kyushu-Okinawa":  { en: "Kyushu-Okinawa", ja: "九州 沖縄",
       prefectures: [["fukuoka", "福岡"], ["kumamoto", "熊本"], ["nagasaki", "長崎"], ["oita", "大分"], ["saga", "佐賀"], ["miyazaki", "宮崎"], ["kagoshima", "鹿児島"], ["okinawa", "沖縄"]] },
+    "Sports":          { en: "Sports", ja: "スポーツ", extra: ["sports", "スポーツ"], prefectures: [] },
     "Other":           { en: "Other", ja: "その他", prefectures: [] },
   };
 

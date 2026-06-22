@@ -26,6 +26,20 @@ export function buildSchedule(channelsData, epoch, generatedAt) {
   return { epoch, generatedAt, channels };
 }
 
+// Pure: combine a primary channel's videos with sub-channel video arrays into
+// one publishedAt-sorted list (oldest->newest), capping each source independently.
+// Inputs are oldest->newest (as fetchVideos produces). Missing/invalid publishedAt
+// sorts as oldest (epoch 0); ties break by insertion order (stable).
+export function mergeSources(primaryVideos, subVideoArrays, { maxPrimary, maxSub }) {
+  const ts = (x) => { const t = Date.parse(x && x.publishedAt); return Number.isNaN(t) ? 0 : t; };
+  const newest = (arr, n) => (n >= arr.length ? arr.slice() : arr.slice(arr.length - n));
+  const tagged = [];
+  for (const x of newest(primaryVideos, maxPrimary)) tagged.push([x, ts(x), tagged.length]);
+  for (const sub of subVideoArrays) for (const x of newest(sub, maxSub)) tagged.push([x, ts(x), tagged.length]);
+  tagged.sort((a, b) => (a[1] - b[1]) || (a[2] - b[2]));
+  return tagged.map((t) => t[0]);
+}
+
 const EPOCH = 1700000000; // FIXED — never change; keeps the shared clock continuous.
 const MAX_ITEMS = 40;     // recent uploads per channel (window)
 // All channels come from the directory (tv/channels.json). Embeddability is

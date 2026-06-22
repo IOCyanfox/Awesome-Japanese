@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert";
-import { buildSchedule, keepVideo } from "./build-schedule.mjs";
+import { buildSchedule, keepVideo, mergeSources } from "./build-schedule.mjs";
 
 test("keepVideo: drops zero/negative duration", () => {
   assert.strictEqual(keepVideo(0, "landscape"), false);
@@ -61,4 +61,27 @@ test("buildSchedule drops zero-duration items", () => {
   ]}], 1700000000, 1);
   assert.strictEqual(out.channels["UCz"].items.length, 1);
   assert.strictEqual(out.channels["UCz"].total, 30);
+});
+
+// helper: video oldest->newest order, ISO publishedAt
+const v = (id, pub) => ({ videoId: id, isoDuration: "PT2M", publishedAt: pub });
+
+test("mergeSources: chronological interleave across sources (oldest->newest)", () => {
+  const primary = [v("A", "2026-01-01T00:00:00Z"), v("B", "2026-01-03T00:00:00Z")];
+  const news    = [v("X", "2026-01-02T00:00:00Z"), v("Y", "2026-01-04T00:00:00Z")];
+  const out = mergeSources(primary, [news], { maxPrimary: 40, maxSub: 18 }).map((x) => x.videoId);
+  assert.deepStrictEqual(out, ["A", "X", "B", "Y"]);
+});
+
+test("mergeSources: per-source cap keeps the NEWEST maxSub from each sub", () => {
+  const primary = [v("P1", "2026-01-01T00:00:00Z")];
+  const sub = [v("s1","2026-02-01T00:00:00Z"), v("s2","2026-02-02T00:00:00Z"), v("s3","2026-02-03T00:00:00Z"), v("s4","2026-02-04T00:00:00Z")];
+  const out = mergeSources(primary, [sub], { maxPrimary: 40, maxSub: 2 }).map((x) => x.videoId);
+  assert.deepStrictEqual(out, ["P1", "s3", "s4"]);
+});
+
+test("mergeSources: missing publishedAt sorts as oldest, stable order", () => {
+  const primary = [v("A", "2026-01-05T00:00:00Z"), { videoId: "N1", isoDuration: "PT2M" }, { videoId: "N2", isoDuration: "PT2M" }];
+  const out = mergeSources(primary, [], { maxPrimary: 40, maxSub: 18 }).map((x) => x.videoId);
+  assert.deepStrictEqual(out, ["N1", "N2", "A"]);
 });
